@@ -1,19 +1,19 @@
 package com.spring.yhtwatch.Service.Impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.yhtwatch.Dto.Request.PassengerTypeCount;
 import com.spring.yhtwatch.Dto.Request.SearchRoute;
 import com.spring.yhtwatch.Service.TCDDClient;
 import com.spring.yhtwatch.Dto.Request.TrainAvailabilityRequest;
-import com.spring.yhtwatch.Dto.Response.TrainAvailabilityResponse;
 import com.spring.yhtwatch.Entity.Alert;
 import com.spring.yhtwatch.Service.SeatCheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -28,44 +28,60 @@ public class SeatCheckServiceImpl implements SeatCheckService {
 
     @Override
     public boolean hasSeats(Alert alert) {
-
-        TrainAvailabilityRequest req = buildRequest(alert);
-
-        try {
-            String json = new ObjectMapper().writeValueAsString(req);
-            log.info("TCDD REQUEST => " + json);
-        } catch (Exception e) {
-            log.error("Failed to log request", e);
-        }
-
-        TrainAvailabilityResponse res = tcddClient.checkAvailability(req);
-
-        int seats = res.totalSeats();
-
-        log.info("TCDD RESPONSE => totalSeats = " + seats);
-
-        if (seats == 0) {
-            log.info("No available seats for alert " + alert.getId());
-        } else {
-            log.info("Available seats found for alert " + alert.getId() +
-                    ": required = " + alert.getMinAvailableSeats() +
-                    ", found = " + seats);
-        }
-
+        JsonNode root = tcddClient.checkAvailability(buildRequest(alert));
+        int seats = extractSeats(root);
         return seats >= alert.getMinAvailableSeats();
     }
 
+    private int extractSeats(JsonNode root) {
+        if (root == null) return 0;
+
+        int total = 0;
+
+        for (JsonNode leg : root.path("trainLegs")) {
+            for (JsonNode availability : leg.path("trainAvailabilities")) {
+
+                for (JsonNode train : availability.path("trains")) {
+                    for (JsonNode cap : train.path("bookingClassCapacities")) {
+                        int id = cap.path("bookingClassId").asInt();
+                        int capVal = cap.path("capacity").asInt(0);
+                        if (!isDisabledBookingClass(id)) {
+                            total += capVal;
+                        }
+                    }
+                }
+
+                for (JsonNode car : availability.path("cars")) {
+                    for (JsonNode av : car.path("availabilities")) {
+                        String cabin = av.path("cabinClass").path("name").asText("");
+                        if (!"ENGELLİ".equalsIgnoreCase(cabin)) {
+                            total += av.path("availability").asInt(0);
+                        }
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
+    private boolean isDisabledBookingClass(int id) {
+        return id == 7;
+    }
 
     private TrainAvailabilityRequest buildRequest(Alert alert) {
-        Integer departureId = stationLookupService.getStationId(alert.getOriginStationName());
-        Integer arrivalId   = stationLookupService.getStationId(alert.getDestinationStationName());
+        Integer departureId =
+                stationLookupService.getStationId(alert.getOriginStationName());
+        Integer arrivalId =
+                stationLookupService.getStationId(alert.getDestinationStationName());
 
-        String dateTime = alert.getTravelDate()
-                .atStartOfDay()
-                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+        LocalDateTime localMidnight =
+                alert.getTravelDate().atStartOfDay();
 
-        String departureName = stationLookupService.getExactStationName(departureId);
-        String arrivalName   = stationLookupService.getExactStationName(arrivalId);
+        String dateTime =
+                localMidnight.format(
+                        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
+                );
+
 
         return new TrainAvailabilityRequest(
                 List.of(new SearchRoute(

@@ -1,12 +1,10 @@
 package com.spring.yhtwatch.Service.Impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.yhtwatch.Dto.Request.AlertRequest;
 import com.spring.yhtwatch.Entity.Alert;
 import com.spring.yhtwatch.Repository.AlertRepository;
 import com.spring.yhtwatch.Service.AlertService;
 import com.spring.yhtwatch.Service.MailService;
-import com.spring.yhtwatch.Service.RedisService;
 import com.spring.yhtwatch.Service.SeatCheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
