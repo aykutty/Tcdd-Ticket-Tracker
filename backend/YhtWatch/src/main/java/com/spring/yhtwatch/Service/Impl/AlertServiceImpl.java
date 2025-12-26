@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -51,15 +49,18 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    public List<Alert> getActiveAlerts() {
-        return alertRepository.findByActiveTrue();
-    }
-
-    @Override
     public void processAlert(Alert alert) {
         boolean hasSeats = seatCheckService.hasSeats(alert);
 
         if (!hasSeats) {
+            if (alert.getLastNotifiedAt() != null) {
+                alert.setLastNotifiedAt(null);
+                alertRepository.save(alert);
+            }
+            return;
+        }
+
+        if (alert.getLastNotifiedAt() != null) {
             return;
         }
 
@@ -73,13 +74,4 @@ public class AlertServiceImpl implements AlertService {
         alertRepository.save(alert);
     }
 
-    @Override
-    public void deactivate(Alert alert) {
-        alert.setActive(false);
-        alertRepository.save(alert);
-    }
-
-    private String normalize(String str) {
-        return str.trim().toUpperCase();
-    }
 }

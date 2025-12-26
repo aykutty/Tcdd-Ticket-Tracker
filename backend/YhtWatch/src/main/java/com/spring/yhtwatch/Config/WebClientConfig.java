@@ -20,10 +20,8 @@ public class WebClientConfig {
         return builder
                 .baseUrl("https://web-api-prod-ytp.tcddtasimacilik.gov.tr")
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .exchangeStrategies(
-                        ExchangeStrategies.builder()
-                                .codecs(configurer ->
-                                        configurer
+                .exchangeStrategies(ExchangeStrategies.builder()
+                        .codecs(configurer -> configurer
                                                 .defaultCodecs()
                                                 .maxInMemorySize(10 * 1024 * 1024)
                                 )

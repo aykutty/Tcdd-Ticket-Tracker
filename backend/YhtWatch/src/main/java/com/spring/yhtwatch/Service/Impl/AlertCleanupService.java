@@ -13,7 +13,7 @@ public class AlertCleanupService {
 
     private final AlertRepository alertRepository;
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0 * * * * ")
     public void cleanup() {
 
         LocalDateTime cutoff = LocalDateTime.now().minusHours(1);

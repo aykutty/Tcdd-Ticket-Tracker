@@ -39,8 +39,5 @@ public class StationLookupService {
         return nameToId.get(name);
     }
 
-    public String getExactStationName(Integer id) {
-        return idToName.get(id);
-    }
 }
 

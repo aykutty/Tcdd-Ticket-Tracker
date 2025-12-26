@@ -8,11 +8,9 @@ import java.util.List;
 public interface AlertService {
 
     Alert createAlert(AlertRequest request);
-    List<Alert> getActiveAlerts();
 
     void processAlert(Alert alert);
 
     void markNotified(Alert alert);
 
-    void deactivate(Alert alert);
 }

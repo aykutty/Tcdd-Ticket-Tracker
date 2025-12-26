@@ -16,7 +16,6 @@ public class AlertSchedulerServiceImpl {
 
     private final AlertService alertService;
     private final AlertRepository alertRepository;
-    private final RedisService redisService;
 
     @Scheduled(fixedRate = 300000)
     public void checkAlerts() {
@@ -24,11 +23,6 @@ public class AlertSchedulerServiceImpl {
         List<Alert> alerts = alertRepository.findByActiveTrue();
 
         for (Alert alert : alerts) {
-
-            if(!redisService.shouldProcess(alert.getId())) {
-                continue;
-            }
-
             alertService.processAlert(alert);
         }
     }

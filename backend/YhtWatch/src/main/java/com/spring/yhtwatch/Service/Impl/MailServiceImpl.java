@@ -20,7 +20,7 @@ public class MailServiceImpl implements MailService {
         msg.setTo(alert.getEmail());
         msg.setSubject("TCDD Seat Availability");
         msg.setText("Seat(s) are available for your route. \n " +
-                "Between" + alert.getStartTime() + "and " + alert.getEndTime());
+                "For the time between " + alert.getStartTime() + " and " + alert.getEndTime());
 
         mailSender.send(msg);
     }

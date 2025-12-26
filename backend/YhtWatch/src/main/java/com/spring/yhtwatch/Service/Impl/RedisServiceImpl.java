@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.UUID;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,18 +17,20 @@ public class RedisServiceImpl implements RedisService {
     private final StringRedisTemplate redis;
     private static final Logger log = LoggerFactory.getLogger(RedisService.class);
 
-    public boolean shouldProcess(UUID alertId) {
 
-        String key = "alert" + alertId;
-
-        Boolean exists = redis.hasKey(key);
-        if (Boolean.TRUE.equals(exists)) {
-            log.info("REDIS — Alert {} skipped (cached request)", alertId);
-            return false;
-        }
-
-        redis.opsForValue().set(key, "1", Duration.ofMinutes(5));
-        log.info("REDIS — Alert {} processed (no cache entry, created new)", alertId);
-        return true;
+    @Override
+    public Optional<Boolean> getCachedAvailability(String key) {
+        String v = redis.opsForValue().get(key);
+        return v == null ? Optional.empty() : Optional.of(Boolean.parseBoolean(v));
     }
+
+    @Override
+    public void cacheAvailability(String key, boolean available) {
+        redis.opsForValue().set(
+                key,
+                String.valueOf(available),
+                Duration.ofMinutes(1)
+        );
+    }
+
 }
