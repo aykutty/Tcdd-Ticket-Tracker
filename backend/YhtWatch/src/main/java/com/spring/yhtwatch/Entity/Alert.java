@@ -53,10 +53,6 @@ public class Alert {
 
     @Builder.Default
     @Column(nullable = false)
-    private Integer minAvailableSeats = 1;
-
-    @Builder.Default
-    @Column(nullable = false)
     private Boolean active = true;
 
     private LocalDateTime lastNotifiedAt;

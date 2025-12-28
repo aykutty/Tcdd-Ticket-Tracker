@@ -27,8 +27,6 @@ public record AlertRequest(
         LocalTime startTime,
 
         @NotNull
-        LocalTime endTime,
+        LocalTime endTime
 
-        @Min(1)
-        Integer minAvailableSeats
 ) { }

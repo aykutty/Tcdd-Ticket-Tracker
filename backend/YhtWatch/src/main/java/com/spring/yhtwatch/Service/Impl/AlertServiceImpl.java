@@ -1,6 +1,7 @@
 package com.spring.yhtwatch.Service.Impl;
 
 import com.spring.yhtwatch.Dto.Request.AlertRequest;
+import com.spring.yhtwatch.Dto.Response.AvailableJourney;
 import com.spring.yhtwatch.Entity.Alert;
 import com.spring.yhtwatch.Repository.AlertRepository;
 import com.spring.yhtwatch.Service.AlertService;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +43,6 @@ public class AlertServiceImpl implements AlertService {
                 .travelDate(request.travelDate())
                 .startTime(request.startTime())
                 .endTime(request.endTime())
-                .minAvailableSeats(request.minAvailableSeats())
                 .active(true)
                 .build();
 
@@ -64,7 +65,10 @@ public class AlertServiceImpl implements AlertService {
             return;
         }
 
-        mailService.sendAlertEmail(alert);
+        List<AvailableJourney> departures =
+                seatCheckService.getAvailableJourneys(alert);
+
+        mailService.sendAlertEmail(alert, departures);
         markNotified(alert);
     }
 
