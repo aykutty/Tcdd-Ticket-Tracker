@@ -1,5 +1,6 @@
 package com.spring.yhtwatch.Entity;
 
+import com.spring.yhtwatch.Enum.TicketType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -64,5 +65,8 @@ public class Alert {
     @Builder.Default
     @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    private TicketType desiredTicketType;
 
 }

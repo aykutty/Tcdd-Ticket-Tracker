@@ -125,6 +125,10 @@ public class SeatCheckServiceImpl implements SeatCheckService {
                     Map<TicketType, Integer> seatCounts =
                             collectSeatCounts(train);
 
+                    if (!hasDesiredSeat(seatCounts, alert.getDesiredTicketType())) {
+                        continue;
+                    }
+
                     results.add(
                             new AvailableJourney(departureTime, seatCounts)
                     );
@@ -242,6 +246,18 @@ public class SeatCheckServiceImpl implements SeatCheckService {
                 seats.getOrDefault(TicketType.DISABLED, 0)
         );
     }
+
+    private boolean hasDesiredSeat(
+            Map<TicketType, Integer> seatCounts,
+            TicketType desiredType
+    ) {
+        if (desiredType == null) {
+            return seatCounts.values().stream().anyMatch(c -> c > 0);
+        }
+
+        return seatCounts.getOrDefault(desiredType, 0) > 0;
+    }
+
 }
 
 
